@@ -34,9 +34,9 @@
 
 
 
-하이퍼레저 프레임워크 종류
+## 하이퍼레저 프레임워크 종류
 
-**하이퍼레저 소투소**
+#### **하이퍼레저 소투소**
 
   \- 인텔의 Inel Distributed Ledger 기반
 
@@ -44,7 +44,7 @@
 
   \- 인텔의 SGX 기술을 기반으로 구현
 
-**하이퍼레저 이로하**
+#### **하이퍼레저 이로하**
 
   \-  모바일 어플리케이션 개발에 초점
 
@@ -52,17 +52,17 @@
 
   \- BET 컨센서스 알고리즘 
 
-**하이퍼레저 버로우**
+#### **하이퍼레저 버로우**
 
  \- EVM(Ethereaum Virtual Machine) 기반 스마트 컨트랙트 인터프리터를 내장해 블록체인 클라이언트 서비스 제공
 
-**하이퍼레저 인디** 
+#### **하이퍼레저 인디** 
 
  \- 인증에 특화된 프로젝트
 
  \- 블록체인에 기반한 독립적인 디지털 아이덴티티 레코드(개인 식별자)를 생성하고 사용 할 수 있게 툴 및 라이브러리, 재사용 컴포넌트 제공
 
-**하이퍼레저 패브릭**
+#### **하이퍼레저 패브릭**
 
  \- 모듈러 아키텍처 기반의 어플리케이션/솔루션 개발
 
@@ -74,7 +74,7 @@
 
 
 
-하이퍼레저 패브릭 목표
+## 하이퍼레저 패브릭 목표
 
  \- 허가된 참여자를 대상으로 하는 비즈니스  응용환경에 맞는 블록체인
 
@@ -84,13 +84,13 @@
 
 
 
-하이퍼레저 패브릭 특징
+## 하이퍼레저 패브릭 특징
 
  **Permissioned BlockChain(퍼머션드 블록체인)**
 
   \- 허가된 사용자만 접근을 허용, 접근 권한 제어
 
-  \- 폐쇠방 형태의 프라이빗 블록체인을 구성하는데 최적화 되어있다.
+  \- 폐쇠망 형태의 프라이빗 블록체인을 구성하는데 최적화 되어있다.
 
  **일반 프로그래밍 언어 사용**
 
@@ -263,4 +263,178 @@ CA(Certification Authority)
   \- 네트워크를 구성하는 조직에는 루트인증서(Root Certificate)를, 네트워크 접속 사용자에게는 신원등록 인증서(Enrollment Certificate, Ecert)를 발급
 
   \- 1.2버전 전 까지 X.509, 이후 아이덴티티 믹서가 추가돼 익명성 보장 암호화기법으로 신원 증명
+
+
+
+## 하이퍼레저 환경설정
+
+
+
+> ### 개발 환경
+>
+> - 가상화 환경 소프트웨어
+>   - Oracle Virtual Box 6.0.14
+> - 리눅스 게스트 OS
+>   - Ubuntu 16.04.x
+> - 필요 도구 및 소프트웨어
+>   - cURL
+>   - Docker Community Edition 17.06 이상
+>   - Docker Compose 1.14.0 이상
+> - Golang 1.11.x
+> - Git 2.9.x 이상
+> - Python
+> - Node.js
+
+
+
+## 1. VirtualBox에 우분투 리눅스 설치
+
+> Ubuntu 18.04.1 LTS
+
+### (1) cURL 설치
+
+cURL은 URL을 통해 데이터를 전송할 수 있는 도구이다.
+
+HTTP, HTTPS 뿐만 아니라 FTP, SMTP 등 많은 프로토콜을 지원한다.
+
+```null
+$ sudo apt install curl
+$ curl -v
+```
+
+
+
+### (2) Docker 설치
+
+도커는 컨테이너 기반의 오픈소스 가상화 플랫폼이다. 애플리케이션을 컨테이너라는 계층으로 격리시켜 OS에 관계없이 컨테이너 안에서 개발, 배포, 운영할 수 있도록 제공하고, 어느 환경에서도 동일하게 실행한다.
+
+```null
+$ curl -fsSL https://get.docker.com/ | sudo sh
+
+// user 계정 추가
+$ sudo usermod -aG docker $USER
+$ sudo reboot
+
+$ docker -v
+```
+
+
+
+### (3) Docker Compose 설치
+
+도커 컴포즈는 여러 개의 도커 컨테이너를 정의하고 실행하는 개발자 편의 도구이다. YAML 파일을 사용해 각 컨테이너들의 설정 정보를 쉽게 정의할 수 있으며, 컨테이너를 명령어로 간단히 생성하고 시작할 수 있다.
+
+```null
+$ sudo curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+
+
+// 실행 권한 설정
+$ sudo chmod +x /usr/local/bin/docker-compose
+```
+
+
+
+### (4) Golang
+
+```null
+$ cd /usr/local
+$ sudo wget https://storage.googleapis.com/golang/go1.11.1.linux-amd64.tar.gz
+$ sudo tar -C /usr/local/ -xzf go1.11.1.linux-amd64.tar.gz
+
+// 환경변수 설정
+GOPATH 등 설정
+```
+
+- GOPATH : Go로 개발시 필요한 작업 공간과 같은 개념으로, 외부 라이브러리나 패키지, 툴 소스 등을 받아노느 위치를 지정한다.
+
+
+
+### (5) Git
+
+```null
+sudo apt-get install git
+git --version
+```
+
+- 책은 오타같다^^
+
+
+
+### (5) Python
+
+> Python 2.7버전 설치
+
+```null
+sudo apt install -y python
+python --version
+	Python 2.7.17
+```
+
+
+
+### (5) Node.js, npm
+
+**Hyperledger Fabric SDK**에서 Node.js를 사용한다. Node.js는 확장성 있는 네트워크 애플리케이션 개발에 사용되는 소프트웨어 플랫폼이다.
+
+**Node.js**는 자체적으로 HTTP 서버 라이브러리를 포함하고 있기 때문에 아파치와 같은 별도의 웹 서버가 없어도 웹 서비스를 제공한다.
+
+```null
+$ curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
+$ sudo reboot
+
+// nvm 커맨드 명령어로 설치
+$ nvm install 8
+
+// node.js 버전 8 선택
+$ nvm use 8
+```
+
+
+
+**npm**은 Node Package Manager의 약자로 자바스크립트 프로그래밍 언어를 위한 패키지 관리자이다. Node.js를 설치하면 npm이 설치된다.
+
+```null
+$ npm install npm@5.6.0 -g
+
+$ node -v
+v8.16.2
+$ npm -v
+5.6.0node 
+```
+
+
+
+### (6) VSCode 설치
+
+우분투에 설치
+
+
+
+### (7) JAVA JDK 설치
+
+> 자바 버전 8 설치
+
+자바로 체인코드 개발을 위한 자바 설치
+
+```null
+$ sudo add-apt-repository ppa:openjdk-r/ppa
+$ sudo apt update
+$ sudo apt install openjdk-8-jdk openjdk-8-jre
+```
+
+
+
+### (8) Gradle
+
+자바 빌드 툴
+
+```null
+sudo apt install gradle
+```
+
+
+
+### (9) IntelliJ IDEA
+
+우분투에 설치
 
