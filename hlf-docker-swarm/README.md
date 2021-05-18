@@ -359,3 +359,16 @@ AWS 계정 가입하고 로그인 후 메인화면에서 **[가상 머신 시작
 **Ubuntu Server 18.04 LTS (HVM)** 선택
 
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws2.png?raw=true)
+
+
+
+### 3. 가상머신 인스턴스 유형 선택
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws3.png?raw=true)
+
+
+
+
+
+
+
