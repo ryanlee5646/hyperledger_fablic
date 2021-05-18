@@ -346,29 +346,48 @@ URL : 192.168.99.100:9000 (Manager 노드)
 
 
 
-## AWS 클라우드를 이용한 Virtual Machine 환경 구축
+## 가상서버 구축
 
-### 1. AWS 계정 생성
+### 1. AWS 클라우드를 이용한 Virtual Machine 환경 구축
+
+#### (1) AWS 계정 생성
 
 AWS 계정 가입하고 로그인 후 메인화면에서 **[가상 머신 시작]** 클릭 
 
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws1.png?raw=true)
 
-### 2. Ubuntu 가상머신 생성
+#### (2) Ubuntu 가상머신 생성
 
 **Ubuntu Server 18.04 LTS (HVM)** 선택
 
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws2.png?raw=true)
 
+#### (3) 가상머신 인스턴스 유형 선택
 
-
-### 3. 가상머신 인스턴스 유형 선택
+표시된 사양으로 선택 후 다음(인스턴스 세부 구성)으로 넘어감
 
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws3.png?raw=true)
 
+#### (4) 인스턴스 세부 구성
 
+인스턴스 개수를 3개로 수정 후 다음(스토리지 추가)로 넘어감
 
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws4.png?raw=true)
 
+#### (5) 스토리지 추가
 
+스토리지 용량을 30GB으로 수정 후 다음(태그 추가)로 넘어감
 
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws5.png?raw=true)
 
+#### (6) 태그 추가 및 보안그룹 구성
+
+태그 추가는 옵션 사항으로 이므로 넘어가고 보안그룹구성 또한 기본 설정 후 넘어간다. 
+
+#### (7) 인스턴스 시작을 위한 키페어 생성
+
+키페어는 AWS 서버에 SSH 접속을 위해 필요한 보안키이므로 [새 키 페어 생성]을 눌러 키페어 이름은 `docker-swarm` 으로 하여 키페어를 다운로드 한다.
+
+❗️**키페어를 다운로드하고 [인스턴스 시작]을 눌렀을 때 오류가 뜨는건 리전(지역)을 인증하는데 시간이 걸리기 때문이다. 그런경우 10~20분 후 정상적인 인스턴스 실행 가능하다.**
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws6.png?raw=true)
