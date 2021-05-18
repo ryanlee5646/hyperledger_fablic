@@ -244,9 +244,7 @@ pdsaxg4emgvo        web.3               nginx:latest        worker2             
 
 ```
 
-
-
-####(5) Docker Swarm 컨테이너 수 up/down
+#### (5) Docker Swarm 컨테이너 수 up/down
 
 1. **컨테이너 수 증가**
 
