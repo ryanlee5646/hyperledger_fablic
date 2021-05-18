@@ -344,7 +344,7 @@ URL : 192.168.99.100:9000 (Manager 노드)
 
 
 
-## 가상서버 구축
+## 가상서버 구축(AWS)
 
 ### 1. AWS 클라우드를 이용한 Virtual Machine 환경 구축
 
@@ -389,4 +389,57 @@ AWS 계정 가입하고 로그인 후 메인화면에서 **[가상 머신 시작
 ❗️**키페어를 다운로드하고 [인스턴스 시작]을 눌렀을 때 오류가 뜨는건 리전(지역)을 인증하는데 시간이 걸리기 때문이다. 그런경우 10~20분 후 정상적인 인스턴스 실행 가능하다.**
 
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws6.png?raw=true)
+
+#### (8) 인스턴스 네이밍
+
+manager, worker1, worker2
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws7.png?raw=true)
+
+
+
+### 2. 터미널에서 SSH로 VM(가상머신) 접속 후 환경 설정
+
+#### (1) SSH에서 VM 접속 (Manager, Worker1, Worker2)
+
+-> 인스턴스 ID를 클릭한다.
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws8.png?raw=true)
+
+
+
+-> 연결을 클릭한다.
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws9.png?raw=true)
+
+
+
+-> 인스턴스 키를 비공개화하고 나서 SSH 접속(❗️총 3개의 각각의 터미널에서 **manager**, **worker1**, **worker2**에 해당하는 명령어를 동일하게 실행시켜 준다.)
+
+```bash
+# 프라이빗 키 비공개화
+# 인스턴스 생성시 발급받은 프라이빗 키의 경로를 잘 잡아 줘야한다.
+chmod 400 docker-swarm.pem
+
+# SSH 접속(Manager 노드)
+ssh -i "docker-swarm.pem" ubuntu@ec2-13-124-76-144.ap-northeast-2.compute.amazonaws.com
+```
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws10.png?raw=true)
+
+
+
+-> SSH로 접속한 총 3개의 노드
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws11.png?raw=true)
+
+
+
+
+
+
+
+
+
+
 
