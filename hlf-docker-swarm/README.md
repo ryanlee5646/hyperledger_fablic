@@ -348,5 +348,5 @@ URL : 192.168.99.100:9000 (Manager 노드)
 
 ## AWS 클라우드를 이용한 Virtual Machine 환경 구축
 
- 
+ ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws1.png?raw=true)
 
