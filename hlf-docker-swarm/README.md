@@ -160,7 +160,7 @@ worker2    -        virtualbox   Running   tcp://192.168.99.102:2376           v
 
 # 다음과 같은 결과가 나오면 정상적 실행
 
-docker@manager1:~$ docker swarm init --advertise-addr 192.168.99.100
+docker@manager1:~$ docker swarm init --advertise-addr <IP Addr>
 
 Swarm initialized: current node (je05gpdrkd3397v2ons9y2m4f) is now a manager.
 
@@ -168,7 +168,7 @@ To add a worker to this swarm, run the following command:
 
 ### 아래의 명령어를 통해 작업자노드를 docker swarm cluster에 Join 한다.
 #####################################################
-    docker swarm join --token SWMTKN-1-0jhlkq7r9aaexiz9id2kr0wndl3ktp8gg5l87w6dmp6310k1sx-1tnyh1zeh326sdbprusdxlo1s 192.168.99.100:2377
+    docker swarm join --token SWMTKN-1-*************************************** <IP Addr:2377>
 #####################################################
 To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
 
@@ -508,13 +508,81 @@ $ ssh -i "docker-swarm.pem" ubuntu@ec2-13-124-217-83.ap-northeast-2.compute.amaz
 
 Docker-Machine으로 VM을 설치해서 테스트 한거랑 동일하게 설정
 
-1. Manager 노드에서 Swarm 클러스터 생성
+1. **Manager 노드에서 Swarm 클러스터 생성**
 
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws12.png?raw=true)
 
 ```bash
 # Manager 노드의 IP로 클러스터 생성
-docker swarm init --advertise-addr 192.168.99.100
+$ docker swarm init --advertise-addr 172.31.15.21
+```
+
+❗️ swarm cluster를 다시 생성해야하거나 node에서 벗어 나려면
+
+**`docker swarm leave --force`**
+
+2. **Worker 노드를 Swarm에 조인**
+
+```bash
+# Swarm 클러스터 생성시 나오는 명령어를 실행
+$ docker swarm join --token SWMTKN-1-0r39oz1gl5uvj5u54j9z5pk97zerspdo98xzdmynl1fckmwhfo-b4ztmb7inq8vx3zgzy1lqgvs9 172.31.15.21:2377
+```
+
+❗️❗️❗️ 혹시나 아래와 같은 에러가 발생한다면 방화벽을 열어 줘야한다.
+
+```bash
+Error response from daemon: Timeout was reached before node joined. The attempt to join the swarm will continue in the background. Use the "docker info" command to see the current swarm status of your node.
+```
+
+**도커 공식 문서에 의하면 다음과 같이 방화벽을 열어줘야한다.**
+
+(1) **TCP:2377** => Cluster Management(Swarm Join)에서 사용
+
+(2) **TCP/UDP:7946** => 노드간 통신
+
+(3) **UDP:4789** => 오버레이 네트워크 간 트래픽 통신
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws13.png?raw=true)
+
+
+
+**다음과 같이 나오면 정상적 실행**
+
+```bash
+$ docker node ls
+
+ID                            HOSTNAME           STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+5mctdk57f6w366awfmysn48tg     ip-172-31-4-8      Ready     Active                          20.10.6
+u3v6hclgcygp5alcowg0ucdoa     ip-172-31-11-117   Ready     Active                          20.10.6
+wreeb0vzh7cxsn5eaiym2rft2 *   ip-172-31-15-21    Ready     Active         Leader           20.10.6
+```
+
+
+
+3. **Docker Service 생성**
+
+``` bash
+# docker service create --name <Service Name> -p 80:80 --replicas <container num> nginx
+$ docker service create --name web -p 80:80 --replicas 3 nginx
+
+# 다음과 같이 나오면 정상적 실행
+lhojtmjwzetd2du416ajn3cuv
+overall progress: 3 out of 3 tasks
+1/3: running
+2/3: running
+3/3: running
+verify: Service converged
+
+# Docker Service 조회
+$ docker service ls
+
+ID             NAME      MODE         REPLICAS   IMAGE          PORTS
+lhojtmjwzetd   web       replicated   3/3        nginx:latest   *:80->80/tcp
+
+# Docker 컨테이너 리스트
+$ docker ps
+CONTAINER ID   IMAGE          COMMAND                  CREATED              STATUS              PORTS     NAMES
+d6a2fd7c5406   nginx:latest   "/docker-entrypoint.…"   About a minute ago   Up About a minute   80/tcp    web.3.k9i4iqc7xa4qg3bc6qe8wlwwv
 ```
 
 
