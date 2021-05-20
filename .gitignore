@@ -117,4 +117,4 @@ dmypy.json
 .pyre/
 
 # Security
-.pem
+docker-swarm.pem
