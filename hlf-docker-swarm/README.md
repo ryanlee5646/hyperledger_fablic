@@ -307,9 +307,9 @@ Url : [www.portainer.io/](https://www.portainer.io/)
 
 ```bash
 # Manager 노드에서 실행
-docker@manager1:~$ curl -L https://downloads.portainer.io/portainer-agent-stack.yml -o portainer-agent-stack.yml
+$ curl -L https://downloads.portainer.io/portainer-agent-stack.yml -o portainer-agent-stack.yml
 
-docker@manager1:~$ docker stack deploy -c portainer-agent-stack.yml portainer
+$ docker stack deploy -c portainer-agent-stack.yml portainer
 
 # 다음과 같이 나오면 정상적 실행
 Creating network portainer_agent_network
@@ -601,5 +601,5 @@ Worker2 노드: **`13.124.***.**:80`**
 
 #### (4) Portainer 설정
 
-ㅎ
+[환경설정] - [Portainer 설치](#Portainer 설치)
 
