@@ -601,5 +601,5 @@ Worker2 노드: **`13.124.***.**:80`**
 
 #### (4) Portainer 설정
 
-[환경설정] - [Portainer 설치](#Portainer 설치)
+[환경설정] - [Portainer 설치](#### (2)-Portainer-설치)
 
