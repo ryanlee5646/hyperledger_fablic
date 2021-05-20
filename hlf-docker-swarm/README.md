@@ -149,7 +149,7 @@ $ docker-machine ssh manager1
 2. **관리자 노드에서 마스터 노드 지정 명령어 실행**
 
 ```bash
-docker@manager1:~$ docker swarm init --advertise-addr 192.168.99.100
+$ docker swarm init --advertise-addr 192.168.99.100
 
 # docker-machine 목록에서 manager1 URL 확인(local bash에서 조회)
 $ docker-machine ls
@@ -364,6 +364,12 @@ AWS 계정 가입하고 로그인 후 메인화면에서 **[가상 머신 시작
 
 표시된 사양으로 선택 후 다음(인스턴스 세부 구성)으로 넘어감
 
+❗️❗️현재 이미지에서는 `t2.medium`으로 선택이 되어있어  과금이 발생할 수 있다.
+
+(이틀 정도 인스턴스 켜놓고 8000원 과금...ㅠㅠ)
+
+**고로 사용자가 프리티어 기간이라면  `t2.micro` 를 사용하는 것을 추천!!** 
+
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws3.png?raw=true)
 
 #### (4) 인스턴스 세부 구성
@@ -435,7 +441,81 @@ ssh -i "docker-swarm.pem" ubuntu@ec2-13-124-76-144.ap-northeast-2.compute.amazon
 
 
 
+#### (2) VM에 Docker 설치 (모든 노드에 동일하게 실행)
 
+참고 : https://docs.docker.com/engine/install/ubuntu/
+
+1. **`apt-get` 패키지 설치**
+
+``` bash
+$ sudo apt-get update
+$ sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+```
+
+2. **Docker 공식 GPG키 추가**
+
+```bash
+# 강의에서 나오는 명령어
+$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+# 현재 기준(2021.05.20) 공식문서 명령어
+$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+```
+
+3. **저장소 설정**
+
+```bash
+$ sudo add-apt-repository \
+"deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) \
+stable"
+```
+
+4. **Docker Engine 설치**
+
+```bash
+$ sudo apt-get update
+$ sudo apt-get install docker-ce docker-ce-cli containerd.io
+```
+
+5. **Docker를 root가 아닌 사용자로 이용**
+
+```bash
+$ sudo usermod -aG docker ${USER}
+```
+
+6. **원활한 적용을 위해 VM 리부팅**
+
+❗️리부팅 되는데 3~5분 정도가 소요됌
+
+```bash
+# 리부팅
+$ sudo reboot
+
+# ssh 접속(각자 노드에 맞는 EC2로 접속)
+$ ssh -i "docker-swarm.pem" ubuntu@ec2-13-124-217-83.ap-northeast-2.compute.amazonaws.com
+```
+
+
+
+#### (3) Docker Swarm 네트워크 생성
+
+Docker-Machine으로 VM을 설치해서 테스트 한거랑 동일하게 설정
+
+1. Manager 노드에서 Swarm 클러스터 생성
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws12.png?raw=true)
+
+```bash
+# Manager 노드의 IP로 클러스터 생성
+docker swarm init --advertise-addr 192.168.99.100
+```
 
 
 
