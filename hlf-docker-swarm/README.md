@@ -563,7 +563,7 @@ wreeb0vzh7cxsn5eaiym2rft2 *   ip-172-31-15-21    Ready     Active         Leader
 
 ``` bash
 # docker service create --name <Service Name> -p 80:80 --replicas <container num> nginx
-$ docker service create --name web -p 80:80 --replicas 3 nginx
+$ docker service create --name web --publish 80:80 --replicas 3 nginx
 
 # 다음과 같이 나오면 정상적 실행
 lhojtmjwzetd2du416ajn3cuv
@@ -585,9 +585,21 @@ CONTAINER ID   IMAGE          COMMAND                  CREATED              STAT
 d6a2fd7c5406   nginx:latest   "/docker-entrypoint.…"   About a minute ago   Up About a minute   80/tcp    web.3.k9i4iqc7xa4qg3bc6qe8wlwwv
 ```
 
+**Nginx Web 서버 접속 확인(퍼블릭 IPv4주소)**
+
+Manager 노드: **`54.180.***.**:80`**
+
+Worker1 노드: **`3.34.***.***:80`**
+
+Worker2 노드: **`13.124.***.**:80`**
+
+**다음과 같이 나오면 정상적 실행**
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws14.png?raw=true)
 
 
 
+#### (4) Portainer 설정
 
-
+ㅎ
 
