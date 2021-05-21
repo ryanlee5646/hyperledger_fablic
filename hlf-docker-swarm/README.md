@@ -601,5 +601,98 @@ Worker2 노드: **`13.124.***.**:80`**
 
 #### (4) Portainer 설정
 
-[Portainer 설치](#(2)-Portainer-설치)
+[환경설정] - [Portainer 설치](#(2)-Portainer-설치)
+
+❗️❗️❗️ 접속이 되지 않는다면 EC2 방화벽을 열어줘야한다.
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/aws15.png?raw=true)
+
+**Portainer에서는 컨테이너수를 늘리고 줄일 수가 있다.**
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/portainer2.png?raw=true)
+
+
+
+## 패프릭 인증기관(Certificate Authority, CA) 구축
+
+### 1. 오버레이(Overlay) 네트워크 이해
+
+참고자료1: https://watch-n-learn.tistory.com/49
+
+참고자료2:  https://code-machina.github.io/2019/08/08/Docker-Swarm-Overlay-Network-Part-1.html
+
+#### (1) 정의
+
+1. **Ingress 네트워크**: 네트워크는 서비스의 노드들 간에 로드 밸런싱을 수행하는 Overlay 네트워크이다. Docker Swarm에서는 서비스를 외부에 쉽게 노출하기 위해 모든 노드가 ingress라는 가상 네트워크에 속해있다. Docker swarm의 모든 노드가 노출된 포트로 클라이언트에서 요청을 하면, 해당 요청을 IPVS라는 모듈로 전달한다. IPVS는 해당 서비스에 참여하는 모든 IP주소를 추적하고 그 중 하나를 선택한 뒤, 요청을 해당 경로로 라우팅한다. 
+
+   **"서비스에서 포트를 오픈하면, 모든 노드에서 포트가 오픈되고 어떤 노드에 요청을 보내도 실행 중인 컨테이너에 자동으로 전달한다."** 
+
+2. **Overlay 네트워크**: 오버레이 네트워크는 Docker Swarm에 참여하는 Docker Daemon 간의 통신을 관리한다. 독립 실행 컨테이너의 네트워크를 생성하는 방법과 동일한 방식으로 생성할 수 있다. 또한 생성한 오버레이 네트워크에 Swarm service를 연결시켜 service 간에 통신을 활성화 할 수 있다. 이러한 오버레이 네트워크는 Overlay Network Driver를 사용한다.
+
+   **오버레이 네트워크를 사용하면 컨테이너는 외부에 포트를 오픈하지 않아도 되고 연결되는 다른 컨테이너와(예를들어 웹과 디비) 다른 노드에 있어도 같은 서버에 있는 것처럼 통신할 수 있다.** 
+
+#### (2) 오버레이(Overlay) 네트워크 생성
+
+```bash
+# 오버레이 네트워크 생성
+$ docker network create --driver=overlay --attachable test
+
+# 네트워크 조회(test 네트워크 확인)
+$ docker network ls
+NETWORK ID     NAME                      DRIVER    SCOPE
+4610a87ad2ea   bridge                    bridge    local
+8aa238da04bf   docker_gwbridge           bridge    local
+b2a8979568f8   host                      host      local
+w5l0mu9eu8q2   ingress                   overlay   swarm
+27cc17887d59   none                      null      local
+8jz7wbwgme2a   portainer_agent_network   overlay   swarm
+0x4bx818li9w   test                      overlay   swarm
+
+```
+
+#### (3) Docker 노드 내용 수정
+
+1. **Label 추가**
+
+```bash
+$ docker node update --label-add name=manager <Manager 컨테이너명>
+$ docker node update --label-add name=worker1 <Worker1 컨테이너명>
+$ docker node update --label-add name=worker2 <Worker2 컨테이너명>
+```
+
+2. **컨네이너 상세조회**
+
+```bash
+$ docker node inspect <컨테이너명>
+
+# Label에 내용이 수정되었음
+"Spec": {"Labels":{
+						"name":"manager"
+						}
+					}
+```
+
+####(4) CA 도커 컴포저 파일 배포 (docker-compose-ca.yaml)
+
+```bash
+# ../hlf-docker-swarm/test-network 위치에서 실행
+$ docker stack deploy -c docker/docker-compose-ca.yaml hlf
+
+Ignoring deprecated options:
+
+container_name: Setting the container name is not supported.
+
+Creating service hlf_ca_org1
+Creating service hlf_ca_org2
+Creating service hlf_ca_org3
+Creating service hlf_ca_orderer
+```
+
+***생성된 CA 컨테이너**
+
+Manage 노드 : **`hlf_ca_orderer`, `hlf_ca_org1`**
+
+Worker1 노드: **`hlf_ca_org2`**
+
+Worker2 노드: **`hlf_ca_org3`**
 
