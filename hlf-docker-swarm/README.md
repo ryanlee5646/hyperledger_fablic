@@ -613,6 +613,12 @@ Worker2 노드: **`13.124.***.**:80`**
 
 
 
+#### (5) Visual Studio Code와 AWS EC2 인스턴스 연동
+
+해당 블로그 참고: https://vlee.kr/4810
+
+
+
 ## 패프릭 인증기관(Certificate Authority, CA) 구축
 
 ### 1. 오버레이(Overlay) 네트워크 이해
@@ -670,9 +676,12 @@ $ docker node inspect <컨테이너명>
 						"name":"manager"
 						}
 					}
+					
 ```
 
-####(4) CA 도커 컴포저 파일 배포 (docker-compose-ca.yaml)
+### 2. CA(Certificate Authority) 설치
+
+####(1) CA 도커 컴포저 파일 배포 (docker-compose-ca.yaml)
 
 ```bash
 # ../hlf-docker-swarm/test-network 위치에서 실행
@@ -696,7 +705,35 @@ Worker1 노드: **`hlf_ca_org2`**
 
 Worker2 노드: **`hlf_ca_org3`**
 
-#### (5) 관리자 및 피어 생성
+#### (2) CA를 통한 인증으로 피어와 주문자(Orderer) 생성
+
+**`registerEnroll.sh`** 을 실행시킨다.
+
+1. 조직 구성원 생성 및 인증(CA, Org admin, peer)
+
+```bash
+# 모든 명령어는 /hlf-docker-swarm/test-network 경로에서 실행
+
+# registerEnroll.sh의 메서드를 사용하도록 터미널창에 적용
+$ source ./organizations/fabric-ca/registerEnroll.sh
+##### 1.Manager 노드 #####
+# Manager 노드에서 Org1 구성원 생성 메서드 실행
+$ createOrg1
+# Manager 노드에서 Orderer 구성원 생성 메서드 실행
+$ createOrderer
+
+##### 2.Worker1 노드 #####
+# Worker1 노드에서 Org2 구성원 생성 메서드 실행
+$ createOrg2
+
+##### 3.Worker2 노드 #####
+# Worker2 노드에서 Org3 구성원 생성 메서드 실행
+$ createOrg3
 
 
+```
+
+**구성원 및 인증키들이 생성됌**
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/ca1.png?raw=true)
 
