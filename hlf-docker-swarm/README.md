@@ -785,9 +785,108 @@ Hyperledger Fabric 네트워크 구축시 필요한 여러가지 트랜젝션(�
 # 1. 제네시스 블록생성
 $ ./scripts/createGenesis.sh
 
+# 2. createGenesis.sh 소스
+# configtxgen tool을 이용한 제네시스블록 생성
+function createConsortium() {
+
+  which configtxgen
+  if [ "$?" -ne 0 ]; then
+    fatalln "configtxgen tool not found."
+  fi
+
+  infoln "Generating Orderer Genesis block"
+
+  # Note: For some unknown reason (at least for now) the block file can't be
+  # named orderer.genesis.block or the orderer will fail to launch!
+  set -x
+  configtxgen -profile TwoOrgsOrdererGenesis -channelID system-channel -outputBlock ./system-genesis-block/genesis.block
+  res=$?
+  { set +x; } 2>/dev/null
+  if [ $res -ne 0 ]; then
+    fatalln "Failed to generate orderer genesis block..."
+  fi
+}
 ```
 
 **생성된 블록 확인**
 
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/genesis1.png?raw=true)
+
+
+
+### 3. 채널(Channel) 생성 및 앵커피어(Anchor Peer) 생성 트랜잭션
+
+#### (1) 채널 및 앵커피어 생성
+
+```bash
+# ../hlf-docker-swarm/test-network 에서 실행
+# 1. 채널 생성 트랜잭션 실행
+$ ./scripts/createChannelTx.sh
+
+# 2. createChannelTx.sh 소스
+
+createChannelTx() {
+	set -x
+	configtxgen -profile TwoOrgsChannel -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID $CHANNEL_NAME
+	res=$?
+	{ set +x; } 2>/dev/null
+	if [ $res -ne 0 ]; then
+		fatalln "Failed to generate channel configuration transaction..."
+	fi
+
+}
+
+createAncorPeerTx() {
+	for orgmsp in Org1MSP Org2MSP Org3MSP; do
+
+	infoln "Generating anchor peer update transaction for ${orgmsp}"
+	set -x
+	configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/${orgmsp}anchors.tx -channelID $CHANNEL_NAME -asOrg ${orgmsp}
+	res=$?
+	{ set +x; } 2>/dev/null
+	if [ $res -ne 0 ]; then
+		fatalln "Failed to generate anchor peer update transaction for ${orgmsp}..."
+	fi
+	done
+}
+```
+
+**생성된 채널 및 앵커피어 확인**
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/channel1.png?raw=true)
+
+#### (2) 생성된 채널 및 앵커피어를 다른 노드에 복사
+
+FileZilla를 이용하여 Manager 노드에 있는 `channel-artifacts` 폴더를 Worker1, Worker2노드에 동일 한 경로에 복사
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/channel2.png?raw=true)
+
+
+
+## 피어(Peer) 및 주문 서비스(Ordering Service) 시작
+
+ ### 1. Docker-compose를 통한 피어, 주문자, CouchDB 컨테이너 생성
+
+#### (1) 피어, 주문자, CouchDB 생성
+
+```bash
+$ docker stack deploy -c docker/docker-compose-test-net.yaml -c docker/docker-compose-couch.yaml hlf
+
+```
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/order1?raw=true)
+
+#### (2) 현재까지 생성된 패브릭 구성
+
+Orderer CA: 1개 (Manager 노드)
+
+Orderer(순서지정자) : 5개 (Manager 노드)
+
+Org CA : 3개 (각 노드당 하나)
+
+Peer : 3개 ( 각 노드당 하나)
+
+CouchDB : 3개 ( 각 노드당 하나)
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/order2?raw=true)
 
