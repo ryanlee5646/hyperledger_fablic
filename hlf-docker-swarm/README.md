@@ -705,7 +705,7 @@ Worker1 노드: **`hlf_ca_org2`**
 
 Worker2 노드: **`hlf_ca_org3`**
 
-#### (2) CA를 통한 인증으로 피어와 주문자(Orderer) 생성
+#### (2) CA를 통한 인증 및 피어와 주문자(Orderer) 생성
 
 **`registerEnroll.sh`** 을 실행시킨다.
 
@@ -716,6 +716,7 @@ Worker2 노드: **`hlf_ca_org3`**
 
 # registerEnroll.sh의 메서드를 사용하도록 터미널창에 적용
 $ source ./organizations/fabric-ca/registerEnroll.sh
+
 ##### 1.Manager 노드 #####
 # Manager 노드에서 Org1 구성원 생성 메서드 실행
 $ createOrg1
@@ -733,7 +734,60 @@ $ createOrg3
 
 ```
 
-**구성원 및 인증키들이 생성됌**
+**구성원 및 인증키들이 생성(Manager 노드 기준)**
 
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/ca1.png?raw=true)
+
+#### (3) Manager 노드에 Org2, Org3 인증서 복사
+
+1. **파일질라(Filezilla) 설치 및 AWS EC2 인스턴스와 연동**
+
+블로그 참고: https://babamba-playground.tistory.com/27
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/ca2.png?raw=true)
+
+2. **Org2(Worker 1노드), Org2(Worker2 노드)에 있는 인증서 Manager 노드로 복사** 
+
+`/home/ubuntu/hlf-docker-swarm/test-network/organizations/peerOrganizations`
+
+경로에  있는 폴더 다운로드 후 Manager노드에 업로드
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/ca3.png?raw=true)
+
+3. **Manger 노드에 있는 `ordererOrganizations` 폴더 다운로더 후 Worker1, Worker2 노드로 복사**
+
+`/home/ubuntu/hlf-docker-swarm/test-network/organizations/ordererOrganizations`
+
+4. **최종 생성 확인**
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/ca4.png?raw=true)
+
+
+
+## 채널(Channel) 구성요소 생성
+
+### 1. configtx.yaml 설정 파일 분석
+
+블로그 참고자료: [configtx.yaml 이해]( https://velog.io/@jaehyuen/Hyperledger-Fabric-2.2-%EC%8B%A4%EC%8A%B5-3-Fabric-%ED%8A%B8%EB%A0%8C%EC%A0%9D%EC%85%98-%EB%B0%8F-Genesis-block-%EC%83%9D%EC%84%B1#configtx.yaml-%EC%84%A4%EC%A0%95-%ED%8C%8C%EC%9D%BC-%EB%B6%84%EC%84%9D)
+
+Hyperledger Fabric 네트워크 구축시 필요한 여러가지 트랜젝션(채널 생성, 앵커피어 설정) 들과 genesis.block 을 Fabric에서 제공하는 `configtxgen` 툴을 사용하여 생성합니다.
+
+### 2. 제네시스 블록(Genesis block) 생성
+
+#### (1) 제네시스 블록이란?
+
+**제네시스블록**(genesis block)은 블록체인에서 생성된 **첫 번째 블록**을 말한다. 첫 번째 블록이 생성된 이후에 다음 블록이 지속적으로 생성되어 마치 체인처럼 이전 블록에 연결되기 때문에, 제네시스블록이 생성되었다는 것은 해당 **블록체인 네트워크가 시작되었다는 상징적 의미**를 가지고 있다.
+
+#### (2) 제네시스 블록 생성
+
+```bash
+# ../hlf-docker-swarm/test-network 에서 실행
+# 1. 제네시스 블록생성
+$ ./scripts/createGenesis.sh
+
+```
+
+**생성된 블록 확인**
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/genesis1.png?raw=true)
 
