@@ -814,13 +814,13 @@ function createConsortium() {
 
 
 
-### 3. 채널(Channel) 생성 및 앵커피어(Anchor Peer) 생성 트랜잭션
+### 3. 채널(Channel)  및 앵커피어(Anchor Peer) Artifact 생성 
 
-#### (1) 채널 및 앵커피어 생성
+#### (1) 채널 및 앵커피어 Artifact 생성
 
 ```bash
 # ../hlf-docker-swarm/test-network 에서 실행
-# 1. 채널 생성 트랜잭션 실행
+# 1. 채널 artifact 생성 트랜잭션 실행
 $ ./scripts/createChannelTx.sh
 
 # 2. createChannelTx.sh 소스
@@ -855,7 +855,7 @@ createAncorPeerTx() {
 
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/channel1.png?raw=true)
 
-#### (2) 생성된 채널 및 앵커피어를 다른 노드에 복사
+#### (2) 생성된 채널 및 앵커피어 Artifact를 다른 노드에 복사
 
 FileZilla를 이용하여 Manager 노드에 있는 `channel-artifacts` 폴더를 Worker1, Worker2노드에 동일 한 경로에 복사
 
@@ -874,13 +874,13 @@ $ docker stack deploy -c docker/docker-compose-test-net.yaml -c docker/docker-co
 
 ```
 
-![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/order1?raw=true)
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/order1.png?raw=true)
 
 #### (2) 현재까지 생성된 패브릭 구성
 
 Orderer CA: 1개 (Manager 노드)
 
-Orderer(순서지정자) : 5개 (Manager 노드)
+Orderer(순서지정자) : 5개 (Manager 노드)  
 
 Org CA : 3개 (각 노드당 하나)
 
@@ -888,5 +888,91 @@ Peer : 3개 ( 각 노드당 하나)
 
 CouchDB : 3개 ( 각 노드당 하나)
 
-![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/order2?raw=true)
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/order2.png?raw=true)
+
+
+
+## 채널 운영(Channel Operation)
+
+### 1. 채널 생성
+
+#### (1) Docker-compose를 이용하여 `docker-cli` 컨테이너 생성
+
+cli를 통하여 `fablic-tool`의 커맨드를 사용할 수 있다. 
+
+```bash
+$ docker stack deploy -c docker/docker-compose-cli.yaml hlf
+```
+
+  ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/cli1.png?raw=true)
+
+**각 노드에 생성된 `cli` 컨테이너 확인**
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/cli2.png?raw=true)
+
+
+
+#### (2) docker cli 컨테이너 bash 접속 
+
+```bash
+# Fablic-tool를 사용하기 위해서 cli 컨테이너 bash 접속
+# docker exex -it <cli 컨테이너 ID> bash
+
+$ docker exec -it 0eefd780193c bash
+```
+
+다음과 같이 실행되면 정상
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/cli3.png?raw=true)
+
+#### (3) 채널(Channel) 생성
+
+```bash
+# cli 컨테이너 내에서 채널명을 사용할 수 있도록 선언
+export CHANNEL_NAME=mychannel
+
+# 확인
+echo $CHANNEL_NAME
+mychannel
+
+# 채널 생성 스크립트 실행
+./scripts/create_app_channel.sh
+```
+
+채널 생성 후 `channel-artifacts` 에 `my channel.block` 이 생긴걸 확인 할 수 있다.
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/cli4.png?raw=true)
+
+#### (4) 피어(Peer)를 채널(Channel)에 참가
+
+❗️`./channel-artifacts/mychannel.block` 를 Worker1, Worker2 노드에 동일한 경로에 복사해준다.
+
+```bash
+# 피어를 채널에 참가(모든 노드에서 실행)
+peer channel join -b ./channel-artifacts/mychannel.block
+
+# 다음과같이 나오면 정상적 실행
+2021-05-24 07:43:32.142 UTC [msp.identity] Sign -> DEBU 02a Sign: digest: 96AC2C8CACAF29D56EA7276A43A4B857AE94414628DBFA0D47DD6BA2498DCA8F
+2021-05-24 07:43:32.472 UTC [channelCmd] executeJoin -> INFO 02b Successfully submitted proposal to join channel
+```
+
+
+
+####(5) 앵커 피어(Ancor Peer) 설정하기
+
+**앵커피어**는 조직 간의 피어들에 대한 **정보 교환의 대리인**으로 사용된다. 서로에 대한 위치를 알게 되어 아무 조직의 Peer에 Proposal을 보내도 모두에 적용될 수 있게 되며, MSP에 대한 공유도 가능해진다. **적어도 하나의 앵키피어가 채널 설정시 정의되야하며**, 채널에 참여하는 모든 피어들은 제네시스 블록안에 기록된 앵커피어에 대한 정보를 공유하게 된다. (앵커피어가 1개일 경우 서로 다른 B,C의 조직은 A조직의 그 앵커피어를 통해서 서로에 대해 알게되고 MSP를 직접 교환하게 된다)
+
+```bash
+# 앵커피어 설정
+# ./scripts/updateAnchorPeer.sh <채널명> <조직명MSP>
+
+# 1. Manager 노드
+./scripts/updateAnchorPeer.sh mychannel Org1MSP
+
+# 2. Worker1 노드
+./scripts/updateAnchorPeer.sh mychannel Org2MSP
+
+# 3. Worker2 노드
+./scripts/updateAnchorPeer.sh mychannel Org3MSP
+```
 
