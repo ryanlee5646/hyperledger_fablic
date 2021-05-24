@@ -956,9 +956,7 @@ peer channel join -b ./channel-artifacts/mychannel.block
 2021-05-24 07:43:32.472 UTC [channelCmd] executeJoin -> INFO 02b Successfully submitted proposal to join channel
 ```
 
-
-
-####(5) 앵커 피어(Ancor Peer) 설정하기
+#### (5) 앵커 피어(Ancor Peer) 설정하기
 
 **앵커피어**는 조직 간의 피어들에 대한 **정보 교환의 대리인**으로 사용된다. 서로에 대한 위치를 알게 되어 아무 조직의 Peer에 Proposal을 보내도 모두에 적용될 수 있게 되며, MSP에 대한 공유도 가능해진다. **적어도 하나의 앵키피어가 채널 설정시 정의되야하며**, 채널에 참여하는 모든 피어들은 제네시스 블록안에 기록된 앵커피어에 대한 정보를 공유하게 된다. (앵커피어가 1개일 경우 서로 다른 B,C의 조직은 A조직의 그 앵커피어를 통해서 서로에 대해 알게되고 MSP를 직접 교환하게 된다)
 
@@ -975,4 +973,10 @@ peer channel join -b ./channel-artifacts/mychannel.block
 # 3. Worker2 노드
 ./scripts/updateAnchorPeer.sh mychannel Org3MSP
 ```
+
+
+
+## 체인코드(Chaincode) 설치 및 승인
+
+### 1. 체인코드 패킹(Packing) 과 설치(Installation)
 
