@@ -746,7 +746,7 @@ $ createOrg3
 
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/ca2.png?raw=true)
 
-2. **Org2(Worker 1노드), Org2(Worker2 노드)에 있는 인증서 Manager 노드로 복사** 
+2. **Org2(Worker 1노드), Org3(Worker2 노드)에 있는 인증서 Manager 노드로 복사** 
 
 `/home/ubuntu/hlf-docker-swarm/test-network/organizations/peerOrganizations`
 
@@ -939,7 +939,7 @@ mychannel
 ./scripts/create_app_channel.sh
 ```
 
-채널 생성 후 `channel-artifacts` 에 `my channel.block` 이 생긴걸 확인 할 수 있다.
+채널 생성 후 `channel-artifacts` 에 `mychannel.block` 이 생긴걸 확인 할 수 있다.
 
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/cli4.png?raw=true)
 
@@ -978,5 +978,178 @@ peer channel join -b ./channel-artifacts/mychannel.block
 
 ## 체인코드(Chaincode) 설치 및 승인
 
-### 1. 체인코드 패킹(Packing) 과 설치(Installation)
+### 1. 체인코드 패키징(Packaging) 과 설치(Installation)
+
+참고자료: https://hihellloitland.tistory.com/70
+
+#### (1) 체인코드(스마트컨트랙트) 패키징
+
+체인코드를 배포하기전 패키징을 해야한다.
+
+**`package_cc.sh` 내부 소스**
+
+```bash 
+peer lifecycle chaincode package ${CC_PATH}/${CC_NAME}.tar.gz --path ${CC_PATH}/$CC_NAME --label ${CC_NAME}_1
+```
+
+
+
+`--path` : 스마트 컨트렉트 코드의 위치를 제공
+`--lang` : 체인 코드 언어를 지정하는 데 사용
+`--label` : 체인 코드가 설치된 후 체인 코드를 식별하는 체인 코드 레이블을 지정하는 데 사용, 레이블에 체인 코드 이름과 버전을 포함하는 것이 좋다.
+
+```bash 
+# docker cli 컨테이너 bash에서 실행
+
+# 1.체인코드 패키지명 지정
+export CC_NAME=basic
+
+# 2.패키징 실행
+./scripts/package_cc.sh
+```
+
+#### (2) 체인코드 패키지 다른 노드에 복사
+
+Manager 노드에 생성된 `basic.tar.gz` 체인코드 패키지를 다른 노드에 동일한 위치에 복사해준다.
+
+#### (3) 체인코드 패키지 설치
+
+트랜잭션을 승인 할 모든 피어에 체인 코드를 설치해야 한다.
+Org1, Org2, Org3 보증을 요구하도록 보증 정책을 설정하기 때문에 각 조직이 운영하는 피어에 체인 코드를 설치해야 한다.
+
+**`install_cc.sh` 내부소스**
+
+```bash
+peer lifecycle chaincode install ${CC_PATH}/$CC_NAME.tar.gz 
+# 체인코드 패키지 ID 쿼리
+# 패키지 ID는 피어에 설치된 체인코드를 승인된 체인코드 정의와 연결하는 데 사용되며 조직은 체인코드를 사용하여 거래를 승인 할 수 있다.
+peer lifecycle chaincode queryinstalled>&log.txt
+```
+
+**모든 노드에 체인코드 설치 명령어 실행**
+
+```bash
+# CC_NAME 지정(cli 컨테이너 bash 초기화시)
+export CC_NAME=basic
+
+# 체인코드 설치
+./scripts/install_cc.sh
+```
+
+
+
+#### (4) 체인코드 정의 승인
+
+체인코드 패키지를 설치 한 후 조직의 **체인 코드 정의를 승인**해야 한다
+정의에는 이름, 버전 및 체인 코드 승인 정책과 같은 체인 코드 거버넌스의 중요한 매개 변수가 포함된다
+
+**`approve_cc.ch` 내부소스**
+
+```bash
+# log.txt에 저장된 PACKAGE_ID를 가져온다
+PACKAGE_ID=$(sed -n "/${CC_NAME}_${CC_VERSION}/{s/^Package ID: //; s/, Label:.*$//; p;}" log.txt)
+# 체인코드 승인
+peer lifecycle chaincode approveformyorg -o orderer.example.com:7050 --tls --cafile $ORDERER_CA --channelID $CHANNEL_NAME --name $CC_NAME --version 1 --package-id $PACKAGE_ID --sequence 1 --init-required --signature-policy "OR ('Org1MSP.peer','Org2MSP.peer','Org3MSP.peer')" 
+
+```
+
+
+
+```bash
+export CHANNEL_NAME=mychannel
+export CC_NAME=basic
+./scripts/approve_cc.sh
+
+# 다음과 같이 나오면 정상적 실행
+2021-05-25 15:38:43.402 UTC [chaincodeCmd] ClientWait -> INFO 049 txid [16978532115116ebf9b9e1fa9a35392620b49feb70faa29383f0cb29ba9a4438] committed with status (VALID) at peer0.org1.example.com:7051
+```
+
+
+
+#### (5) 승인된 체인코드를 채널에 커밋(Commit)
+
+충분한 수의 조직에서 체인 코드 정의를 승인한 후 한 조직에서 체인 코드 정의를 채널에 커밋 할 수 있다. 
+대부분의 채널 멤버가 정의를 승인한 경우 커밋 트랜잭션이 성공하고 체인코드 정의에서 동의한 매개변수가 채널에서 구현됩니다.
+
+
+
+**채널 구성원이 동일한 체인코드 정의를 승인했는지 확인**
+
+**`check.commit.sh` 내부소스**
+
+```bash
+peer lifecycle chaincode checkcommitreadiness --channelID $CHANNEL_NAME --name $CC_NAME --version 1 --sequence 1 --init-required --signature-policy "OR ('Org1MSP.peer','Org2MSP.peer','Org3MSP.peer')" 
+
+# 다음과 같이 플래그 값으로 승인 여부를 알려 준다.
+# False가 나오는 경우 다른 조직(Worker1,Worker2)에서 체인코드 승인을 해줘야한다.
+Chaincode definition for chaincode 'basic', version '1', sequence '1' on channel 'mychannel' approval status by org:
+Org1MSP: true
+Org2MSP: false
+Org3MSP: false
+```
+
+```bash
+# 조직별 체인코드 승인여부 확인
+./scripts/check_commit.sh
+```
+
+
+
+**채널 구성원이 체인코드 승인을 했으면 커밋한다.**
+
+**`commit_cc.sh` 내부소스**
+
+```bash
+# 체인코드 커밋을 위해 필요한 전역변수들을 선언
+. ./scripts/envVar.sh
+parsePeerConnectionParameters 1 2 3
+
+echo "chaincode commit "
+sleep 5
+# 체인코드를 커밋
+peer lifecycle chaincode commit -o orderer.example.com:7050 --tls --cafile $ORDERER_CA --channelID $CHANNEL_NAME --name $CC_NAME $PEER_CONN_PARMS --version 1 --sequence 1 --init-required --signature-policy "OR ('Org1MSP.peer','Org2MSP.peer','Org3MSP.peer')" 
+
+echo "query commited"
+# 체인코드가 채널에 성공적으로 커밋된 경우 querycommitted 명령은 체인코드 정의의 순서와 버전을 반환한다
+peer lifecycle chaincode querycommitted --channelID mychannel --name basic 
+
+# 위 명령어가 실행 되면 다음와 같이 나타난다
+Committed chaincode definition for chaincode 'basic' on channel 'mychannel':
+Version: 1, Sequence: 1, Endorsement Plugin: escc, Validation Plugin: vscc, Approvals: [Org1MSP: true, Org2MSP: true, Org3MSP: true]
+```
+
+**체인코드를 채널에 커밋한다.**
+
+```bash
+./scripts/commit_cc.sh
+```
+
+
+
+다른 노드에서 **querycommitted** 명령어를 통하여 채널의 체인코드 정보를 조회 할 수 있다.
+
+```bash
+peer lifecycle chaincode querycommitted --channelID mychannel --name basic 
+```
+
+
+
+#### (6) 체인코드 호출하기(Invoke)
+
+**`invoke_cc.sh` 내부소스**
+
+```bash
+echo "Invoke chaincode "
+# fcn_call='{"function":"InitLedger","Args":[]}'
+# 체인코드 초기화(처음 호출시 해당 명령어 주석을 풀고 실행!!!!!
+peer chaincode invoke -o orderer.example.com:7050 --tls --cafile $ORDERER_CA -C $CHANNEL_NAME -n ${CC_NAME} $PEER_CONN_PARMS --isInit -c ${fcn_call}
+
+# 체인코드 호출(CreateAsset 스마트컨트랙트 실행)
+fcn_call='{"function":"CreateAsset","Args":["1","2","2","2","2"]}'
+peer chaincode invoke -o orderer.example.com:7050 --tls --cafile $ORDERER_CA -C mychannel -n ${CC_NAME} $PEER_CONN_PARMS -c ${fcn_call}
+```
+
+체인코드를 정의할 때 **`--init-required`** 플래그를 포함 시켰으므로 첫 번째 트랜잭션은 **`--isInit `**플래그를 호출 명령에 전달하여 체인코드를 초기화해야한다. 
+
+
 
