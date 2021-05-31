@@ -1034,6 +1034,9 @@ export CC_NAME=basic
 
 # 체인코드 설치
 ./scripts/install_cc.sh
+
+# 다음과 같이 나오면 정상적 실행
+2021-05-31 02:34:43.717 UTC [cli.lifecycle.chaincode] submitInstallProposal -> INFO 038 Chaincode code package identifier: basic_1:9820659c595e662a849033ca23b4424e87a126e8f40b5f81ace59820b81fe8e7
 ```
 
 
@@ -1075,7 +1078,7 @@ export CC_NAME=basic
 
 **채널 구성원이 동일한 체인코드 정의를 승인했는지 확인**
 
-**`check.commit.sh` 내부소스**
+**`check_commit.sh` 내부소스**
 
 ```bash
 peer lifecycle chaincode checkcommitreadiness --channelID $CHANNEL_NAME --name $CC_NAME --version 1 --sequence 1 --init-required --signature-policy "OR ('Org1MSP.peer','Org2MSP.peer','Org3MSP.peer')" 
@@ -1152,4 +1155,18 @@ peer chaincode invoke -o orderer.example.com:7050 --tls --cafile $ORDERER_CA -C 
 체인코드를 정의할 때 **`--init-required`** 플래그를 포함 시켰으므로 첫 번째 트랜잭션은 **`--isInit `**플래그를 호출 명령에 전달하여 체인코드를 초기화해야한다. 
 
 
+
+1. **CouchDB 접속**
+
+CouchDB 접속을 통해 체인코드가 정상적으로 호출될 때 원장을 확인할 수 있다.
+
+`<노드IP>:5984/_utils` 접속
+
+ID: **admin**
+
+PW: **adminpw**
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/couchdb1.png?raw=true)
+
+2. 
 
