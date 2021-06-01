@@ -1168,5 +1168,48 @@ PW: **adminpw**
 
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/couchdb1.png?raw=true)
 
-2. 
 
+
+2. **체인코드 초기화**
+
+```bash
+# 체인코드 호출을 위한 환경변수 셋팅
+# Manager 노드에서 실행
+source ./scripts/envVar.sh
+parsePeerConnectionParameters 1 2 3 (Manager 노드는 1,2,3 계정 모두가지고 있다.)
+# 확인
+echo $PEER
+echo $PEER_CONN_PARMS
+
+```
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/bash1.png?raw=true)
+
+```bash
+# 채널과 체인코드명 전역에 선언
+export CHANNEL_NAME=mychannel
+export CC_NAME=basic
+
+# 체인코드 호출(체인코드 초기화)
+./scripts/invoke_cc.sh (InitLedger 스마트컨트랙트 실행)
+
+```
+
+**`mychannel_basic`** 라는 **원장DB**가 생성되었다.
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/couch1.png?raw=true)
+
+**`InitLedger`** 체인코드가 실행됨으로써 데이터 확인이 가능하다.
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/couch2.png?raw=true)
+
+
+
+3. **체인코드 호출(Invoke)**
+
+```bash
+# 체인코드 호출
+./scripts/invoke_cc.sh (CreateAsset 스마트컨트랙트 실행)
+```
+
+![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/couch3.png?raw=true)
