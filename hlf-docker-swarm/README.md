@@ -1208,8 +1208,25 @@ export CC_NAME=basic
 3. **체인코드 호출(Invoke)**
 
 ```bash
+# docker-cli가 초기화 되었으면 전역에 채널명(CHANNEL_NAME)과 체인코드명(CC_NAME) 선언
+export CHANNEL_NAME=mychannle
+export CC_NAME=basic
+
+# 체인코드 피어(조직)별 전역변수 설정
+source ./scripts/envVar.sh
+parsePeerConnectionParameters <체인코드를 실행할 조직 번호> 
+(Manager 노드는 1,2,3 계정 모두가지고 있다.)
+
+예시) parsePeerConnectionParameters 2  # 조직2에 속한 피어가 체인코드 호출
+
 # 체인코드 호출
 ./scripts/invoke_cc.sh (CreateAsset 스마트컨트랙트 실행)
+
+# 직접 명령어로 체인코드 호출
+$ fcn_call='{"function":"CreateAsset","Args":["1","2","2","2","2"]}'
+$ peer chaincode invoke -o orderer.example.com:7050 --tls --cafile $ORDERER_CA -C mychannel -n ${CC_NAME} $PEER_CONN_PARMS -c ${fcn_call}
 ```
+
+원장이 추가된 걸 확인할 수 있다.
 
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/couch3.png?raw=true)
