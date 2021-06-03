@@ -1230,3 +1230,18 @@ $ peer chaincode invoke -o orderer.example.com:7050 --tls --cafile $ORDERER_CA -
 원장이 추가된 걸 확인할 수 있다.
 
 ![](https://github.com/ryanlee5646/hyperledger_fablic/blob/main/images/couch3.png?raw=true)
+
+4. **체인코드 쿼리 조회(Query)**
+
+```bash
+# 자산 조회하는 쿼리
+peer chaincode query -C mychannel -n basic -c '{"function":"GetAllAssets","Args":[]}'
+
+# 다음과 같이 나오면 정상적 실행
+[{"ID":"1","color":"2","size":2,"owner":"2","appraisedValue":2},{"ID":"100","color":"RED","size":10,"owner":"SAM","appraisedValue":3000},{"ID":"200","color":"BLUE","size":30,"owner":"NICK","appraisedValue":5000},{"ID":"asset1","color":"blue","size":5,"owner":"Tomoko","appraisedValue":300},{"ID":"asset2","color":"red","size":5,"owner":"Brad","appraisedValue":400},{"ID":"asset3","color":"green","size":10,"owner":"Jin Soo","appraisedValue":500},{"ID":"asset4","color":"yellow","size":10,"owner":"Max","appraisedValue":600},{"ID":"asset5","color":"black","size":15,"owner":"Adriana","appraisedValue":700},{"ID":"asset6","color":"white","size":15,"owner":"Michel","appraisedValue":800}]
+```
+
+
+
+## Hyperledger Fabric REST-API 서버 구축
+
